@@ -1,3 +1,4 @@
+@isTest
 public class TestEmailToCustomObjectHandler {
     @isTest
     public static void TestInboundMail(){
