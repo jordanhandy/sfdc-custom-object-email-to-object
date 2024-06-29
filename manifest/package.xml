@@ -5,5 +5,15 @@
 		<members>TestEmailToCustomObjectHandler</members>
 		<name>ApexClass</name>
 	</types>
+	<types>
+		<members>Contact_Point__c.Description__c</members>
+		<members>Contact_Point__c.Subject__c</members>
+		<members>Contact_Point__c.Web_Email__c</members>
+		<name>CustomField</name>
+	</types>
+	<types>
+		<members>Contact_Point__c</members>
+		<name>CustomObject</name>
+	</types>
 	<version>60.0</version>
 </Package>
