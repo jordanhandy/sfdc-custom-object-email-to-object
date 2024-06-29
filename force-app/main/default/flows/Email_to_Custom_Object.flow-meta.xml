@@ -1,0 +1,488 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Flow xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>61.0</apiVersion>
+    <assignments>
+        <description>Add content document link to collection</description>
+        <name>Add_ContentDocumentLink_to_Collection</name>
+        <label>Add ContentDocumentLink to Collection</label>
+        <locationX>138</locationX>
+        <locationY>1190</locationY>
+        <assignmentItems>
+            <assignToReference>listContentDocumentLink</assignToReference>
+            <operator>Add</operator>
+            <value>
+                <elementReference>contentDocumentLink</elementReference>
+            </value>
+        </assignmentItems>
+        <connector>
+            <targetReference>Loop_through_Content_Versions</targetReference>
+        </connector>
+    </assignments>
+    <assignments>
+        <description>Assign found record ID</description>
+        <name>Assign_found_record_ID</name>
+        <label>Assign found record ID</label>
+        <locationX>50</locationX>
+        <locationY>350</locationY>
+        <assignmentItems>
+            <assignToReference>foundRecordID</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>Get_Records_with_Record_ID.Id</elementReference>
+            </value>
+        </assignmentItems>
+        <connector>
+            <targetReference>Create_Email_Message</targetReference>
+        </connector>
+    </assignments>
+    <assignments>
+        <description>Assign found record ID</description>
+        <name>Assign_found_record_ID_from_New_Created_Record</name>
+        <label>Assign found record ID from New Created Record</label>
+        <locationX>314</locationX>
+        <locationY>458</locationY>
+        <assignmentItems>
+            <assignToReference>foundRecordID</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>Create_Contact_Point</elementReference>
+            </value>
+        </assignmentItems>
+        <connector>
+            <targetReference>Create_Email_Message</targetReference>
+        </connector>
+    </assignments>
+    <assignments>
+        <description>Create content document link</description>
+        <name>Create_Content_Document_Link</name>
+        <label>Create Content Document Link</label>
+        <locationX>138</locationX>
+        <locationY>1082</locationY>
+        <assignmentItems>
+            <assignToReference>contentDocumentLink.ContentDocumentId</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>Loop_through_Content_Versions.ContentDocumentId</elementReference>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>contentDocumentLink.ShareType</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <stringValue>V</stringValue>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>contentDocumentLink.Visibility</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <stringValue>InternalUsers</stringValue>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>contentDocumentLink.LinkedEntityId</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>foundRecordID</elementReference>
+            </value>
+        </assignmentItems>
+        <connector>
+            <targetReference>Add_ContentDocumentLink_to_Collection</targetReference>
+        </connector>
+    </assignments>
+    <assignments>
+        <description>Store size of content versions</description>
+        <name>Store_size_of_content_versions</name>
+        <label>Store size of content versions</label>
+        <locationX>182</locationX>
+        <locationY>758</locationY>
+        <assignmentItems>
+            <assignToReference>collectionCount</assignToReference>
+            <operator>AssignCount</operator>
+            <value>
+                <elementReference>binaryAttachments</elementReference>
+            </value>
+        </assignmentItems>
+        <connector>
+            <targetReference>Does_Email_Have_Related_Content_Versions</targetReference>
+        </connector>
+    </assignments>
+    <decisions>
+        <description>Does email have related content versions?</description>
+        <name>Does_Email_Have_Related_Content_Versions</name>
+        <label>Does Email Have Related Content Versions?</label>
+        <locationX>182</locationX>
+        <locationY>866</locationY>
+        <defaultConnectorLabel>No content versions</defaultConnectorLabel>
+        <rules>
+            <name>Yes_content_versions_exist</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>collectionCount</leftValueReference>
+                <operator>GreaterThan</operator>
+                <rightValue>
+                    <numberValue>0.0</numberValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>Loop_through_Content_Versions</targetReference>
+            </connector>
+            <label>Yes content versions exist</label>
+        </rules>
+    </decisions>
+    <decisions>
+        <description>Was Matching Record Found?</description>
+        <name>Was_Record_Found</name>
+        <label>Was Record Found?</label>
+        <locationX>182</locationX>
+        <locationY>242</locationY>
+        <defaultConnector>
+            <targetReference>Create_Contact_Point</targetReference>
+        </defaultConnector>
+        <defaultConnectorLabel>No record found</defaultConnectorLabel>
+        <rules>
+            <name>Record_found</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>Get_Records_with_Record_ID</leftValueReference>
+                <operator>IsNull</operator>
+                <rightValue>
+                    <booleanValue>false</booleanValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>Assign_found_record_ID</targetReference>
+            </connector>
+            <label>Record found</label>
+        </rules>
+    </decisions>
+    <description>Flow that gets an email from a custom email handler, creates a record of a custom object, and can perform subsequent tasks after creation</description>
+    <environments>Default</environments>
+    <interviewLabel>Email to Custom Object {!$Flow.CurrentDateTime}</interviewLabel>
+    <label>Email to Custom Object</label>
+    <loops>
+        <description>Loop through content versions</description>
+        <name>Loop_through_Content_Versions</name>
+        <label>Loop through Content Versions</label>
+        <locationX>50</locationX>
+        <locationY>974</locationY>
+        <collectionReference>binaryAttachments</collectionReference>
+        <iterationOrder>Asc</iterationOrder>
+        <nextValueConnector>
+            <targetReference>Create_Content_Document_Link</targetReference>
+        </nextValueConnector>
+        <noMoreValuesConnector>
+            <targetReference>Create_Content_Document_Links</targetReference>
+        </noMoreValuesConnector>
+    </loops>
+    <processMetadataValues>
+        <name>BuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>CanvasMode</name>
+        <value>
+            <stringValue>AUTO_LAYOUT_CANVAS</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>OriginBuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processType>AutoLaunchedFlow</processType>
+    <recordCreates>
+        <description>Create Contact Point</description>
+        <name>Create_Contact_Point</name>
+        <label>Create Contact Point</label>
+        <locationX>314</locationX>
+        <locationY>350</locationY>
+        <connector>
+            <targetReference>Assign_found_record_ID_from_New_Created_Record</targetReference>
+        </connector>
+        <inputAssignments>
+            <field>Description__c</field>
+            <value>
+                <elementReference>plaintextBody</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>OwnerId</field>
+            <value>
+                <elementReference>$User.Id</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Subject__c</field>
+            <value>
+                <elementReference>subject</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Web_Email__c</field>
+            <value>
+                <elementReference>fromAddress</elementReference>
+            </value>
+        </inputAssignments>
+        <object>Contact_Point__c</object>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </recordCreates>
+    <recordCreates>
+        <description>Create Content Document Links</description>
+        <name>Create_Content_Document_Links</name>
+        <label>Create Content Document Links</label>
+        <locationX>50</locationX>
+        <locationY>1382</locationY>
+        <inputReference>listContentDocumentLink</inputReference>
+    </recordCreates>
+    <recordCreates>
+        <description>Create Email Message</description>
+        <name>Create_Email_Message</name>
+        <label>Create Email Message</label>
+        <locationX>182</locationX>
+        <locationY>650</locationY>
+        <connector>
+            <targetReference>Store_size_of_content_versions</targetReference>
+        </connector>
+        <inputAssignments>
+            <field>HtmlBody</field>
+            <value>
+                <elementReference>htmlBody</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Incoming</field>
+            <value>
+                <booleanValue>true</booleanValue>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>MessageDate</field>
+            <value>
+                <elementReference>$Flow.CurrentDateTime</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>MessageIdentifier</field>
+            <value>
+                <elementReference>messageId</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>RelatedToId</field>
+            <value>
+                <elementReference>foundRecordID</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Status</field>
+            <value>
+                <stringValue>0</stringValue>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Subject</field>
+            <value>
+                <elementReference>subject</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>TextBody</field>
+            <value>
+                <elementReference>plaintextBody</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>ToAddress</field>
+            <value>
+                <elementReference>envelope_to</elementReference>
+            </value>
+        </inputAssignments>
+        <object>EmailMessage</object>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </recordCreates>
+    <recordLookups>
+        <description>Get Records with Record ID</description>
+        <name>Get_Records_with_Record_ID</name>
+        <label>Get Records with Record ID</label>
+        <locationX>182</locationX>
+        <locationY>134</locationY>
+        <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
+        <connector>
+            <targetReference>Was_Record_Found</targetReference>
+        </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>Id</field>
+            <operator>EqualTo</operator>
+            <value>
+                <elementReference>recordToken</elementReference>
+            </value>
+        </filters>
+        <getFirstRecordOnly>true</getFirstRecordOnly>
+        <object>Contact_Point__c</object>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </recordLookups>
+    <runInMode>SystemModeWithoutSharing</runInMode>
+    <start>
+        <locationX>56</locationX>
+        <locationY>0</locationY>
+        <connector>
+            <targetReference>Get_Records_with_Record_ID</targetReference>
+        </connector>
+    </start>
+    <status>Active</status>
+    <textTemplates>
+        <description>Send email</description>
+        <name>emailBody</name>
+        <isViewedAsPlainText>false</isViewedAsPlainText>
+        <text>&lt;p&gt;{!references}&lt;/p&gt;</text>
+    </textTemplates>
+    <variables>
+        <description>Binary file attachments</description>
+        <name>binaryAttachments</name>
+        <dataType>SObject</dataType>
+        <isCollection>true</isCollection>
+        <isInput>true</isInput>
+        <isOutput>false</isOutput>
+        <objectType>ContentVersion</objectType>
+    </variables>
+    <variables>
+        <description>CC Addresses</description>
+        <name>ccAddresses</name>
+        <dataType>String</dataType>
+        <isCollection>true</isCollection>
+        <isInput>true</isInput>
+        <isOutput>false</isOutput>
+    </variables>
+    <variables>
+        <description>Collection count</description>
+        <name>collectionCount</name>
+        <dataType>Number</dataType>
+        <isCollection>false</isCollection>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+        <scale>0</scale>
+        <value>
+            <numberValue>0.0</numberValue>
+        </value>
+    </variables>
+    <variables>
+        <description>Content Document Link</description>
+        <name>contentDocumentLink</name>
+        <dataType>SObject</dataType>
+        <isCollection>false</isCollection>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+        <objectType>ContentDocumentLink</objectType>
+    </variables>
+    <variables>
+        <description>To address</description>
+        <name>envelope_to</name>
+        <dataType>String</dataType>
+        <isCollection>false</isCollection>
+        <isInput>true</isInput>
+        <isOutput>false</isOutput>
+    </variables>
+    <variables>
+        <description>Found Record ID for relation creation</description>
+        <name>foundRecordID</name>
+        <dataType>String</dataType>
+        <isCollection>false</isCollection>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+    </variables>
+    <variables>
+        <description>From Address</description>
+        <name>fromAddress</name>
+        <dataType>String</dataType>
+        <isCollection>false</isCollection>
+        <isInput>true</isInput>
+        <isOutput>false</isOutput>
+    </variables>
+    <variables>
+        <description>From Name</description>
+        <name>fromName</name>
+        <dataType>String</dataType>
+        <isCollection>false</isCollection>
+        <isInput>true</isInput>
+        <isOutput>false</isOutput>
+    </variables>
+    <variables>
+        <description>HTML Body of email</description>
+        <name>htmlBody</name>
+        <dataType>String</dataType>
+        <isCollection>false</isCollection>
+        <isInput>true</isInput>
+        <isOutput>false</isOutput>
+    </variables>
+    <variables>
+        <description>List of ContentDocumentLinks</description>
+        <name>listContentDocumentLink</name>
+        <dataType>SObject</dataType>
+        <isCollection>true</isCollection>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+        <objectType>ContentDocumentLink</objectType>
+    </variables>
+    <variables>
+        <description>Message ID</description>
+        <name>messageId</name>
+        <dataType>String</dataType>
+        <isCollection>false</isCollection>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+    </variables>
+    <variables>
+        <description>Email plain text body</description>
+        <name>plaintextBody</name>
+        <dataType>String</dataType>
+        <isCollection>false</isCollection>
+        <isInput>true</isInput>
+        <isOutput>false</isOutput>
+    </variables>
+    <variables>
+        <description>Record ID identifier for related email</description>
+        <name>recordToken</name>
+        <dataType>String</dataType>
+        <isCollection>false</isCollection>
+        <isInput>true</isInput>
+        <isOutput>false</isOutput>
+    </variables>
+    <variables>
+        <description>Email references</description>
+        <name>references</name>
+        <dataType>String</dataType>
+        <isCollection>true</isCollection>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+    </variables>
+    <variables>
+        <description>Email subject</description>
+        <name>subject</name>
+        <dataType>String</dataType>
+        <isCollection>false</isCollection>
+        <isInput>true</isInput>
+        <isOutput>false</isOutput>
+    </variables>
+    <variables>
+        <description>Text attachments</description>
+        <name>textAttachments</name>
+        <dataType>SObject</dataType>
+        <isCollection>true</isCollection>
+        <isInput>true</isInput>
+        <isOutput>false</isOutput>
+        <objectType>ContentVersion</objectType>
+    </variables>
+    <variables>
+        <description>To Addresses</description>
+        <name>toAddresses</name>
+        <dataType>String</dataType>
+        <isCollection>true</isCollection>
+        <isInput>true</isInput>
+        <isOutput>false</isOutput>
+    </variables>
+</Flow>

@@ -15,5 +15,13 @@
 		<members>Contact_Point__c</members>
 		<name>CustomObject</name>
 	</types>
+	<types>
+		<members>Email_to_Custom_Object</members>
+		<name>Flow</name>
+	</types>
+	<types>
+		<members>Email_to_Custom_Object</members>
+		<name>FlowDefinition</name>
+	</types>
 	<version>60.0</version>
 </Package>
